@@ -436,7 +436,7 @@ exports.getIDToken = getIDToken;
 var summary_1 = __nccwpck_require__(9067);
 Object.defineProperty(exports, "summary", ({ enumerable: true, get: function () { return summary_1.summary; } }));
 /**
- * @deprecated use core.summary
+ * @deprecated use summary
  */
 var summary_2 = __nccwpck_require__(9067);
 Object.defineProperty(exports, "markdownSummary", ({ enumerable: true, get: function () { return summary_2.markdownSummary; } }));
@@ -451,7 +451,7 @@ Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: funct
  * Platform utilities exports
  */
 exports.platform = __importStar(__nccwpck_require__(9693));
-//# sourceMappingURL=core.js.map
+//# sourceMappingURL=js.map
 
 /***/ }),
 
@@ -1060,7 +1060,7 @@ class Summary {
 }
 const _summary = new Summary();
 /**
- * @deprecated use `core.summary`
+ * @deprecated use `summary`
  */
 exports.markdownSummary = _summary;
 exports.summary = _summary;
@@ -32755,31 +32755,31 @@ const Config = acc.Config;
 const RAMRoleARNCredentialsProvider = acc.RAMRoleARNCredentialsProvider;
 const EnvironmentVariableCredentialsProvider = acc.EnvironmentVariableCredentialsProvider;
 
-const ROLE_SESSION_NAME = core.getInput('role-session-name', { required: false });
-const roleToAssume = core.getInput('role-to-assume', { required: false });
-const oidcProviderArn = core.getInput('oidc-provider-arn');
-const roleSessionExpiration = core.getInput('role-session-expiration', { required: false });
-const roleChainingInput = core.getInput('role-chaining', { required: false });
+const ROLE_SESSION_NAME = getInput('role-session-name', { required: false });
+const roleToAssume = getInput('role-to-assume', { required: false });
+const oidcProviderArn = getInput('oidc-provider-arn');
+const roleSessionExpiration = getInput('role-session-expiration', { required: false });
+const roleChainingInput = getInput('role-chaining', { required: false });
 const roleChaining = roleChainingInput === 'true';
 
 function setOutput(accessKeyId, accessKeySecret, securityToken) {
-  core.setSecret(accessKeyId);
-  core.setSecret(accessKeySecret);
-  core.setSecret(securityToken);
-  core.setOutput('aliyun-access-key-id', accessKeyId);
-  core.setOutput('aliyun-access-key-secret', accessKeySecret);
-  core.setOutput('aliyun-security-token', securityToken);
+  setSecret(accessKeyId);
+  setSecret(accessKeySecret);
+  setSecret(securityToken);
+  setOutput('aliyun-access-key-id', accessKeyId);
+  setOutput('aliyun-access-key-secret', accessKeySecret);
+  setOutput('aliyun-security-token', securityToken);
   // use standard environment variables
-  core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', accessKeyId);
-  core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', accessKeySecret);
-  core.exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', securityToken);
-  core.exportVariable('ALICLOUD_ACCESS_KEY', accessKeyId);
-  core.exportVariable('ALICLOUD_SECRET_KEY', accessKeySecret);
-  core.exportVariable('ALICLOUD_SECURITY_TOKEN', securityToken);
+  exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', accessKeyId);
+  exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', accessKeySecret);
+  exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', securityToken);
+  exportVariable('ALICLOUD_ACCESS_KEY', accessKeyId);
+  exportVariable('ALICLOUD_SECRET_KEY', accessKeySecret);
+  exportVariable('ALICLOUD_SECURITY_TOKEN', securityToken);
   // keep it for compatibility
-  core.exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', accessKeyId);
-  core.exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', accessKeySecret);
-  core.exportVariable('ALIBABACLOUD_SECURITY_TOKEN', securityToken);
+  exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', accessKeyId);
+  exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', accessKeySecret);
+  exportVariable('ALIBABACLOUD_SECURITY_TOKEN', securityToken);
 }
 
 async function run() {
@@ -32805,8 +32805,8 @@ async function run() {
   }
 
   if (roleToAssume && oidcProviderArn) {
-    const audience = core.getInput('audience');
-    const idToken = await core.getIDToken(audience);
+    const audience = getInput('audience');
+    const idToken = await getIDToken(audience);
     const oidcTokenFilePath = path.join(os.tmpdir(), 'token');
     // write into token file
     await fsx.writeFile(oidcTokenFilePath, idToken);
@@ -32858,7 +32858,7 @@ async function run() {
 if (require.main === require.cache[eval('__filename')]) {
   run().catch((err) => {
     console.log(err.stack);
-    core.setFailed(err.message);
+    setFailed(err.message);
   });
 }
 

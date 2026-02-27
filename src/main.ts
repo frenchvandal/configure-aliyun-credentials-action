@@ -1,8 +1,8 @@
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import { join } from 'path';
 import { writeFile } from 'fs/promises';
 
-import * as core from '@actions/core';
+import { exportVariable, getIDToken, getInput, setFailed, setOutput, setSecret } from '@actions/core';
 import CredentialClient, {
   Config,
   RAMRoleARNCredentialsProvider,
@@ -15,31 +15,31 @@ interface Credential {
   securityToken: string;
 }
 
-const ROLE_SESSION_NAME = core.getInput('role-session-name', { required: false });
-const roleToAssume = core.getInput('role-to-assume', { required: false });
-const oidcProviderArn = core.getInput('oidc-provider-arn');
-const roleSessionExpiration = core.getInput('role-session-expiration', { required: false });
-const roleChainingInput = core.getInput('role-chaining', { required: false });
+const ROLE_SESSION_NAME = getInput('role-session-name', { required: false });
+const roleToAssume = getInput('role-to-assume', { required: false });
+const oidcProviderArn = getInput('oidc-provider-arn');
+const roleSessionExpiration = getInput('role-session-expiration', { required: false });
+const roleChainingInput = getInput('role-chaining', { required: false });
 const roleChaining = roleChainingInput === 'true';
 
-function setOutput(accessKeyId: string, accessKeySecret: string, securityToken: string): void {
-  core.setSecret(accessKeyId);
-  core.setSecret(accessKeySecret);
-  core.setSecret(securityToken);
-  core.setOutput('aliyun-access-key-id', accessKeyId);
-  core.setOutput('aliyun-access-key-secret', accessKeySecret);
-  core.setOutput('aliyun-security-token', securityToken);
+function setCredentialsOutput(accessKeyId: string, accessKeySecret: string, securityToken: string): void {
+  setSecret(accessKeyId);
+  setSecret(accessKeySecret);
+  setSecret(securityToken);
+  setOutput('aliyun-access-key-id', accessKeyId);
+  setOutput('aliyun-access-key-secret', accessKeySecret);
+  setOutput('aliyun-security-token', securityToken);
   // use standard environment variables
-  core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', accessKeyId);
-  core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', accessKeySecret);
-  core.exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', securityToken);
-  core.exportVariable('ALICLOUD_ACCESS_KEY', accessKeyId);
-  core.exportVariable('ALICLOUD_SECRET_KEY', accessKeySecret);
-  core.exportVariable('ALICLOUD_SECURITY_TOKEN', securityToken);
+  exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', accessKeyId);
+  exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', accessKeySecret);
+  exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', securityToken);
+  exportVariable('ALICLOUD_ACCESS_KEY', accessKeyId);
+  exportVariable('ALICLOUD_SECRET_KEY', accessKeySecret);
+  exportVariable('ALICLOUD_SECURITY_TOKEN', securityToken);
   // keep it for compatibility
-  core.exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', accessKeyId);
-  core.exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', accessKeySecret);
-  core.exportVariable('ALIBABACLOUD_SECURITY_TOKEN', securityToken);
+  exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', accessKeyId);
+  exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', accessKeySecret);
+  exportVariable('ALIBABACLOUD_SECURITY_TOKEN', securityToken);
 }
 
 export async function run(): Promise<void> {
@@ -58,15 +58,15 @@ export async function run(): Promise<void> {
 
     const cred = new CredentialClient(null, provider);
     const { accessKeyId, accessKeySecret, securityToken } = (await cred.getCredential()) as Credential;
-    setOutput(accessKeyId, accessKeySecret, securityToken);
+    setCredentialsOutput(accessKeyId, accessKeySecret, securityToken);
     return;
   }
 
   // Scenario 2: OIDC Role Assumption
   if (roleToAssume && oidcProviderArn) {
-    const audience = core.getInput('audience');
-    const idToken = await core.getIDToken(audience);
-    const oidcTokenFilePath = path.join(os.tmpdir(), 'token');
+    const audience = getInput('audience');
+    const idToken = await getIDToken(audience);
+    const oidcTokenFilePath = join(os.tmpdir(), 'token');
     // write into token file
     await writeFile(oidcTokenFilePath, idToken);
 
@@ -80,7 +80,7 @@ export async function run(): Promise<void> {
     });
     const client = new CredentialClient(config);
     const { accessKeyId, accessKeySecret, securityToken } = (await client.getCredential()) as Credential;
-    setOutput(accessKeyId, accessKeySecret, securityToken);
+    setCredentialsOutput(accessKeyId, accessKeySecret, securityToken);
     return;
   }
 
@@ -106,17 +106,17 @@ export async function run(): Promise<void> {
     });
     const ramCred = new CredentialClient(ramConfig);
     const { accessKeyId, accessKeySecret, securityToken } = (await ramCred.getCredential()) as Credential;
-    setOutput(accessKeyId, accessKeySecret, securityToken);
+    setCredentialsOutput(accessKeyId, accessKeySecret, securityToken);
     return;
   }
 
   // Scenario 4: use ECS credentials directly
-  setOutput(ecsKeyId, ecsKeySecret, ecsToken);
+  setCredentialsOutput(ecsKeyId, ecsKeySecret, ecsToken);
 }
 
 if (require.main === module) {
   run().catch((err: Error) => {
     console.log(err.stack);
-    core.setFailed(err.message);
+    setFailed(err.message);
   });
 }

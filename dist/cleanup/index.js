@@ -436,7 +436,7 @@ exports.getIDToken = getIDToken;
 var summary_1 = __nccwpck_require__(9067);
 Object.defineProperty(exports, "summary", ({ enumerable: true, get: function () { return summary_1.summary; } }));
 /**
- * @deprecated use core.summary
+ * @deprecated use summary
  */
 var summary_2 = __nccwpck_require__(9067);
 Object.defineProperty(exports, "markdownSummary", ({ enumerable: true, get: function () { return summary_2.markdownSummary; } }));
@@ -451,7 +451,7 @@ Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: funct
  * Platform utilities exports
  */
 exports.platform = __importStar(__nccwpck_require__(9693));
-//# sourceMappingURL=core.js.map
+//# sourceMappingURL=js.map
 
 /***/ }),
 
@@ -1060,7 +1060,7 @@ class Summary {
 }
 const _summary = new Summary();
 /**
- * @deprecated use `core.summary`
+ * @deprecated use `summary`
  */
 exports.markdownSummary = _summary;
 exports.summary = _summary;
@@ -27563,17 +27563,17 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(5753);
 
 // use standard environment variables
-core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', '');
-core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', '');
-core.exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', '');
+exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', '');
+exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', '');
+exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', '');
 // keep it for compatibility
-core.exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', '');
-core.exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', '');
-core.exportVariable('ALIBABACLOUD_SECURITY_TOKEN', '');
+exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', '');
+exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', '');
+exportVariable('ALIBABACLOUD_SECURITY_TOKEN', '');
 // keep it for terraform oss backend support https://developer.hashicorp.com/terraform/language/backend/oss
-core.exportVariable('ALICLOUD_ACCESS_KEY', '');
-core.exportVariable('ALICLOUD_SECRET_KEY', '');
-core.exportVariable('ALICLOUD_SECURITY_TOKEN', '');
+exportVariable('ALICLOUD_ACCESS_KEY', '');
+exportVariable('ALICLOUD_SECRET_KEY', '');
+exportVariable('ALICLOUD_SECURITY_TOKEN', '');
 })();
 
 module.exports = __webpack_exports__;

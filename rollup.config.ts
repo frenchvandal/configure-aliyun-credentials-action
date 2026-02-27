@@ -2,15 +2,23 @@ import commonjs from '@rollup/plugin-commonjs'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 
-const config = {
-  input: 'src/index.ts',
-  output: {
-    esModule: true,
-    file: 'dist/index.js',
-    format: 'es',
-    sourcemap: true
-  },
-  plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs()]
+const plugins = [typescript(), nodeResolve({ preferBuiltins: true }), commonjs()]
+
+const sharedOutput = {
+  esModule: true,
+  format: 'es',
+  sourcemap: true
 }
 
-export default config
+export default [
+  {
+    input: 'src/main.ts',
+    output: { ...sharedOutput, file: 'dist/main/index.js' },
+    plugins
+  },
+  {
+    input: 'src/cleanup.ts',
+    output: { ...sharedOutput, file: 'dist/cleanup/index.js' },
+    plugins
+  }
+]

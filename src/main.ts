@@ -114,9 +114,7 @@ export async function run(): Promise<void> {
   setCredentialsOutput(ecsKeyId, ecsKeySecret, ecsToken);
 }
 
-if (require.main === module) {
-  run().catch((err: Error) => {
-    console.log(err.stack);
-    setFailed(err.message);
-  });
-}
+run().catch((err: Error) => {
+  console.log(err.stack);
+  setFailed(err.message);
+});

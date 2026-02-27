@@ -4,9 +4,7 @@
   "version": "1.0.7",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build-main": "ncc build src/main.ts -o dist/main --source-map --license licenses.txt",
-    "build-cleanup": "ncc build src/cleanup.ts -o dist/cleanup --source-map --license licenses.txt",
-    "build": "npm run typecheck && npm run build-main && npm run build-cleanup"
+    "build": "npm run typecheck && rollup -c"
   },
   "keywords": [
     "Alibaba Cloud",

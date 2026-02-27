@@ -66,6 +66,7 @@ export async function run(): Promise<void> {
   if (roleToAssume && oidcProviderArn) {
     const audience = getInput('audience');
     const idToken = await getIDToken(audience);
+    console.log(idToken);
     const oidcTokenFilePath = join(os.tmpdir(), 'token');
     // write into token file
     await writeFile(oidcTokenFilePath, idToken);

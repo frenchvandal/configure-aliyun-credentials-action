@@ -27616,7 +27616,7 @@ function requireCommon () {
 
 			const split = (typeof namespaces === 'string' ? namespaces : '')
 				.trim()
-				.replace(' ', ',')
+				.replace(/\s+/g, ',')
 				.split(',')
 				.filter(Boolean);
 
@@ -27968,7 +27968,7 @@ function requireBrowser () {
 		function load() {
 			let r;
 			try {
-				r = exports$1.storage.getItem('debug');
+				r = exports$1.storage.getItem('debug') || exports$1.storage.getItem('DEBUG') ;
 			} catch (error) {
 				// Swallow
 				// XXX (@Qix-) should we be logging these?
@@ -30159,7 +30159,7 @@ var http$1 = {};
 var helper = {};
 
 var name = "@alicloud/credentials";
-var version = "2.4.2";
+var version = "2.4.4";
 var description = "alibaba cloud node.js sdk credentials";
 var main = "dist/src/client.js";
 var scripts = {
@@ -31808,6 +31808,7 @@ function requireCli_profile () {
 	const os_1 = __importDefault(require$$0);
 	const credentials_1 = __importDefault(requireCredentials());
 	const static_ak_1 = __importDefault(requireStatic_ak());
+	const static_sts_1 = __importDefault(requireStatic_sts());
 	const ram_role_arn_1 = __importDefault(requireRam_role_arn());
 	const oidc_role_arn_1 = __importDefault(requireOidc_role_arn());
 	const ecs_ram_role_1 = __importDefault(requireEcs_ram_role());
@@ -31877,6 +31878,12 @@ function requireCli_profile () {
 	                return static_ak_1.default.builder()
 	                    .withAccessKeyId(p.access_key_id)
 	                    .withAccessKeySecret(p.access_key_secret)
+	                    .build();
+	            case 'StsToken':
+	                return static_sts_1.default.builder()
+	                    .withAccessKeyId(p.access_key_id)
+	                    .withAccessKeySecret(p.access_key_secret)
+	                    .withSecurityToken(p.sts_token)
 	                    .build();
 	            case 'RamRoleArn': {
 	                const previousProvider = static_ak_1.default.builder()
@@ -32314,12 +32321,13 @@ function requireClient () {
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(client, "__esModule", { value: true });
-	client.CLIProfileCredentialsProvider = client.ProfileCredentialsProvider = client.EnvironmentVariableCredentialsProvider = client.URICredentialsProvider = client.ECSRAMRoleCredentialsProvider = client.OIDCRoleArnCredentialsProvider = client.RAMRoleARNCredentialsProvider = client.StaticSTSCredentialsProvider = client.StaticAKCredentialsProvider = client.DefaultCredentialsProvider = client.Config = void 0;
+	client.CLIProfileCredentialsProvider = client.ProfileCredentialsProvider = client.EnvironmentVariableCredentialsProvider = client.URICredentialsProvider = client.ECSRAMRoleCredentialsProvider = client.OIDCRoleArnCredentialsProvider = client.RAMRoleARNCredentialsProvider = client.StaticSTSCredentialsProvider = client.StaticAKCredentialsProvider = client.DefaultCredentialsProvider = client.Config = client.CredentialModel = void 0;
 	const rsa_key_pair_credential_1 = __importDefault(requireRsa_key_pair_credential());
 	const bearer_token_credential_1 = __importDefault(requireBearer_token_credential());
 	const config_1 = __importDefault(requireConfig());
 	client.Config = config_1.default;
 	const credential_model_1 = __importDefault(requireCredential_model());
+	client.CredentialModel = credential_model_1.default;
 	const static_ak_1 = __importDefault(requireStatic_ak());
 	client.StaticAKCredentialsProvider = static_ak_1.default;
 	const static_sts_1 = __importDefault(requireStatic_sts());
@@ -32589,6 +32597,7 @@ async function run() {
     if (roleToAssume && oidcProviderArn) {
         const audience = coreExports.getInput('audience');
         const idToken = await coreExports.getIDToken(audience);
+        console.log(idToken);
         const oidcTokenFilePath = join(require$$0.tmpdir(), 'token');
         // write into token file
         await writeFile(oidcTokenFilePath, idToken);

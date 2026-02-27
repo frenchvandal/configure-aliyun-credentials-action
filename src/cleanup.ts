@@ -1,6 +1,4 @@
-'use strict';
-
-const core = require('@actions/core');
+import * as core from '@actions/core';
 
 // use standard environment variables
 core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', '');

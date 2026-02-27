@@ -1,16 +1,19 @@
-'use strict';
+import * as os from 'os';
+import * as path from 'path';
+import { writeFile } from 'fs/promises';
 
-const os = require('os');
-const path = require('path');
-const fsx = require('fs/promises');
+import * as core from '@actions/core';
+import CredentialClient, {
+  Config,
+  RAMRoleARNCredentialsProvider,
+  EnvironmentVariableCredentialsProvider,
+} from '@alicloud/credentials';
 
-const core = require('@actions/core');
-const acc = require('@alicloud/credentials');
-
-const CredentialClient = acc.default;
-const Config = acc.Config;
-const RAMRoleARNCredentialsProvider = acc.RAMRoleARNCredentialsProvider;
-const EnvironmentVariableCredentialsProvider = acc.EnvironmentVariableCredentialsProvider;
+interface Credential {
+  accessKeyId: string;
+  accessKeySecret: string;
+  securityToken: string;
+}
 
 const ROLE_SESSION_NAME = core.getInput('role-session-name', { required: false });
 const roleToAssume = core.getInput('role-to-assume', { required: false });
@@ -19,7 +22,7 @@ const roleSessionExpiration = core.getInput('role-session-expiration', { require
 const roleChainingInput = core.getInput('role-chaining', { required: false });
 const roleChaining = roleChainingInput === 'true';
 
-function setOutput(accessKeyId, accessKeySecret, securityToken) {
+function setOutput(accessKeyId: string, accessKeySecret: string, securityToken: string): void {
   core.setSecret(accessKeyId);
   core.setSecret(accessKeySecret);
   core.setSecret(securityToken);
@@ -39,7 +42,8 @@ function setOutput(accessKeyId, accessKeySecret, securityToken) {
   core.exportVariable('ALIBABACLOUD_SECURITY_TOKEN', securityToken);
 }
 
-async function run() {
+export async function run(): Promise<void> {
+  // Scenario 1: Role Chaining — use existing env credentials to assume another role
   if (roleChaining) {
     if (!roleToAssume) {
       throw new Error("'role-to-assume' must be provided if 'role-chaining' is provided");
@@ -49,74 +53,70 @@ async function run() {
       .withCredentialsProvider(EnvironmentVariableCredentialsProvider.builder().build())
       .withRoleArn(roleToAssume)
       .withRoleSessionName(ROLE_SESSION_NAME)
-      .withDurationSeconds(roleSessionExpiration)
+      .withDurationSeconds(Number(roleSessionExpiration))
       .build();
-    
 
-    {
-      const cred = new CredentialClient(null, provider);
-      const { accessKeyId, accessKeySecret, securityToken } = await cred.getCredential();
-      setOutput(accessKeyId, accessKeySecret, securityToken);
-    }
+    const cred = new CredentialClient(null, provider);
+    const { accessKeyId, accessKeySecret, securityToken } = (await cred.getCredential()) as Credential;
+    setOutput(accessKeyId, accessKeySecret, securityToken);
     return;
   }
 
+  // Scenario 2: OIDC Role Assumption
   if (roleToAssume && oidcProviderArn) {
     const audience = core.getInput('audience');
     const idToken = await core.getIDToken(audience);
     const oidcTokenFilePath = path.join(os.tmpdir(), 'token');
     // write into token file
-    await fsx.writeFile(oidcTokenFilePath, idToken);
+    await writeFile(oidcTokenFilePath, idToken);
+
     const config = new Config({
       type: 'oidc_role_arn',
       roleArn: roleToAssume,
       oidcProviderArn,
       oidcTokenFilePath,
-      roleSessionExpiration,
-      roleSessionName: ROLE_SESSION_NAME
+      roleSessionExpiration: Number(roleSessionExpiration),
+      roleSessionName: ROLE_SESSION_NAME,
     });
     const client = new CredentialClient(config);
-    const { accessKeyId, accessKeySecret, securityToken } = await client.getCredential();
+    const { accessKeyId, accessKeySecret, securityToken } = (await client.getCredential()) as Credential;
     setOutput(accessKeyId, accessKeySecret, securityToken);
     return;
   }
 
-  const config = new Config({
-    type: 'ecs_ram_role'
-  });
-  const client = new CredentialClient(config);
-  const { accessKeyId, accessKeySecret, securityToken } = await client.getCredential();
+  // Scenario 3 & 4: ECS RAM Role (with or without role assumption)
+  const ecsConfig = new Config({ type: 'ecs_ram_role' });
+  const ecsClient = new CredentialClient(ecsConfig);
+  const {
+    accessKeyId: ecsKeyId,
+    accessKeySecret: ecsKeySecret,
+    securityToken: ecsToken,
+  } = (await ecsClient.getCredential()) as Credential;
 
   if (roleToAssume) {
-    const config = new Config({
+    // Scenario 3: use ECS credentials to assume another role
+    const ramConfig = new Config({
       type: 'ram_role_arn',
-      accessKeyId,
-      accessKeySecret,
-      securityToken,
+      accessKeyId: ecsKeyId,
+      accessKeySecret: ecsKeySecret,
+      securityToken: ecsToken,
       roleArn: roleToAssume,
-      roleSessionExpiration,
-      roleSessionName: ROLE_SESSION_NAME
+      roleSessionExpiration: Number(roleSessionExpiration),
+      roleSessionName: ROLE_SESSION_NAME,
     });
-
-    {
-      const cred = new CredentialClient(config);
-      const { accessKeyId, accessKeySecret, securityToken } = await cred.getCredential();
-      setOutput(accessKeyId, accessKeySecret, securityToken);
-    }
-
+    const ramCred = new CredentialClient(ramConfig);
+    const { accessKeyId, accessKeySecret, securityToken } = (await ramCred.getCredential()) as Credential;
+    setOutput(accessKeyId, accessKeySecret, securityToken);
     return;
   }
 
-  setOutput(accessKeyId, accessKeySecret, securityToken);
-
-  return;
+  // Scenario 4: use ECS credentials directly
+  setOutput(ecsKeyId, ecsKeySecret, ecsToken);
 }
 
 if (require.main === module) {
-  run().catch((err) => {
+  run().catch((err: Error) => {
     console.log(err.stack);
     core.setFailed(err.message);
   });
 }
-
-exports.run = run;

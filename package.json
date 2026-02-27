@@ -25,7 +25,7 @@
     "@alicloud/credentials": "^2.4.1"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.19.13",
     "@vercel/ncc": "^0.38.3",
     "typescript": "^5.7.0"
   }

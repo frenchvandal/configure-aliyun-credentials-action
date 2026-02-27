@@ -1,14 +1,14 @@
-import * as core from '@actions/core';
+import {exportVariable} from '@actions/core';
 
 // use standard environment variables
-core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', '');
-core.exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', '');
-core.exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', '');
+exportVariable('ALIBABA_CLOUD_ACCESS_KEY_ID', '');
+exportVariable('ALIBABA_CLOUD_ACCESS_KEY_SECRET', '');
+exportVariable('ALIBABA_CLOUD_SECURITY_TOKEN', '');
 // keep it for compatibility
-core.exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', '');
-core.exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', '');
-core.exportVariable('ALIBABACLOUD_SECURITY_TOKEN', '');
+exportVariable('ALIBABACLOUD_ACCESS_KEY_ID', '');
+exportVariable('ALIBABACLOUD_ACCESS_KEY_SECRET', '');
+exportVariable('ALIBABACLOUD_SECURITY_TOKEN', '');
 // keep it for terraform oss backend support https://developer.hashicorp.com/terraform/language/backend/oss
-core.exportVariable('ALICLOUD_ACCESS_KEY', '');
-core.exportVariable('ALICLOUD_SECRET_KEY', '');
-core.exportVariable('ALICLOUD_SECURITY_TOKEN', '');
+exportVariable('ALICLOUD_ACCESS_KEY', '');
+exportVariable('ALICLOUD_SECRET_KEY', '');
+exportVariable('ALICLOUD_SECURITY_TOKEN', '');

@@ -32597,7 +32597,6 @@ async function run() {
     if (roleToAssume && oidcProviderArn) {
         const audience = coreExports.getInput('audience');
         const idToken = await coreExports.getIDToken(audience);
-        console.log('Raw OIDC token:', idToken);
         // Debug: decode and log the JWT payload (equivalent to:
         //   echo "$ID_TOKEN" | awk -F. '{print $2}' | base64 -d | jq -r)
         const payloadB64 = idToken.split('.')[1];
